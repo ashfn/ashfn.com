@@ -3,7 +3,6 @@ import { Link } from "@/components/Elements";
 import { PageTransition } from "@/components/PageTransition";
 import Icon from "@/components/Icon";
 import ObfuscatedMail from "@/components/ObfuscatedMail";
-import TorFooter from "@/components/TorFooter";
 
 
 
@@ -76,7 +75,6 @@ export default function Home() {
       </div>
 
 
-      <TorFooter />
       </PageTransition>
 
 

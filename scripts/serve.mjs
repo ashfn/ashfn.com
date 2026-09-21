@@ -5,7 +5,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { brotliCompressSync, gzipSync } from 'node:zlib';
-import { ONION_ORIGIN } from '../src/lib/onion.js';
 
 process.chdir(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const args = process.argv.slice(2);
@@ -56,7 +55,6 @@ const server = http.createServer(async (req, res) => {
       'Content-Type': mime[ext] || 'application/octet-stream', 'Content-Length': body.length,
       'Cache-Control': !watching && decoded.startsWith('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache',
       'X-Content-Type-Options': 'nosniff', Vary: 'Accept-Encoding', ...(encoding ? { 'Content-Encoding': encoding } : {}),
-      ...(ext === '.html' && code === 200 ? { 'Onion-Location': ONION_ORIGIN + url.pathname + url.search } : {}),
     });
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch (error) { res.writeHead(error instanceof URIError ? 400 : 500); res.end('Unable to serve this page'); }

@@ -19,7 +19,7 @@ export default function ExternalLink({ href, children, className = '' }: Externa
   const hostname = linkHostname(href);
   const github = hostname && ['github.com', 'githubusercontent.com'].some(domain =>
     hostname === domain || hostname.endsWith('.' + domain));
-  const iconName = hostname?.endsWith('.onion') ? 'tor' : github ? 'github' : null;
+  const iconName = github ? 'github' : null;
 
   return (
     <a

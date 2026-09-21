@@ -67,3 +67,7 @@ TypeScript, all eight export tests, the standard browser interaction suite, eigh
 Removed the throughput graph, CSV, summary JSON, SVG/PNG exports, chart component, browser module, stylesheet and generation utilities. This removes 1,379,439 bytes of source assets and code; the build no longer emits chart assets. The article retains the benchmark table and a concise longer-run average, then explains the running Docker mirror and the native HTML/CSS features that keep the site usable without JavaScript.
 
 TypeScript, all eight export tests, all 44 no-JavaScript configurations and four restrictive Firefox configurations passed. The export check now distinguishes prose mentioning `/editor/` from actual editor links or resources. The local onion proxy serves the updated article, and the removed CSV returns 404. Earlier chart measurements above describe previous revisions.
+
+## Onion features removed, 21 September 2026
+
+The published version no longer includes the onion footer, links to the onion service, Onion-Location metadata or headers, Tor icon support, or the Docker onion setup. The experiment article retains the generated address as plain text and says hosting is not ready. General no-JavaScript support remains. Earlier onion validation sections describe the locally preserved version, not the current release.

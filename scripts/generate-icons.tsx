@@ -3,10 +3,10 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { chromium } from 'playwright';
 import { existsSync, mkdirSync } from 'node:fs';
-import { SiGithub, SiLinkedin, SiTorbrowser, SiGit, SiYoutube } from 'react-icons/si';
+import { SiGithub, SiLinkedin, SiGit, SiYoutube } from 'react-icons/si';
 import { Mail, Sun, Moon, Copy, Check, Rss, ExternalLink, Pen } from 'lucide-react';
 import { iconNames } from '../src/lib/icons';
-const icons = { github: SiGithub, linkedin: SiLinkedin, tor: SiTorbrowser, mail: Mail, sun: Sun, moon: Moon, copy: Copy, check: Check, rss: Rss, external: ExternalLink, pen: Pen, git: SiGit, youtube: SiYoutube };
+const icons = { github: SiGithub, linkedin: SiLinkedin, mail: Mail, sun: Sun, moon: Moon, copy: Copy, check: Check, rss: Rss, external: ExternalLink, pen: Pen, git: SiGit, youtube: SiYoutube };
 const frame = 64;
 const cells = iconNames.map((name, i) => {
   const svg = name === 'chevron'

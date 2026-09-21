@@ -19,7 +19,6 @@ import { getAllPosts, getPublishedPosts } from '../src/lib/posts';
 import { optimizeImages } from './optimize-images';
 import { codeFiles } from '../src/lib/codeFiles';
 import { encodeMailAttributes } from '../src/lib/mail';
-import { ONION_ORIGIN } from '../src/lib/onion.js';
 
 export async function createSite() {
 const documents: { file: string; html: string }[] = [];
@@ -98,7 +97,6 @@ function documentPage(options: Options) {
       {date && <><meta property="article:published_time" content={date} /><meta property="article:author" content="Asher Falcon" /></>}
       <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} /><meta name="twitter:image" content={`${site}/og.png`} />
-      <meta httpEquiv="onion-location" content={ONION_ORIGIN + route} />
       <link rel="icon" href="/favicon.ico" sizes="48x48" /><link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
       <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       <link rel="stylesheet" href={stylesheet} />
@@ -158,11 +156,7 @@ const routes = ['/', '/blog/', '/projects/', '/contact/', ...published.map(p => 
 await emit('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map(route => `<url><loc>${escape(site + route)}</loc></url>`).join('')}</urlset>`);
 await emit('rss.xml', `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Asher Falcon's blog</title><link>${escape(site)}</link><description>Software engineering, projects, and more</description><language>en</language><atom:link href="${escape(site)}/rss.xml" rel="self" type="application/rss+xml"/>${published.map(p => `<item><title>${escape(p.title)}</title><link>${escape(site)}/blog/posts/${p.slug}</link><description>${escape(p.description)}</description><pubDate>${new Date(p.date).toUTCString()}</pubDate><guid>${escape(site)}/blog/posts/${p.slug}</guid></item>`).join('')}</channel></rss>`);
 await emit('_redirects', `/contact/ / 301\n${posts.filter(p => /^\d+$/.test(p.slug)).map(p => `/blog/${p.slug}/ /blog/posts/${p.slug}/ 301`).join('\n')}\n`);
-const onionHeaders = documents.filter(doc => doc.file.endsWith('index.html')).map(doc => {
-  const route = '/' + doc.file.slice(0, -'index.html'.length);
-  return `${route}\n  Onion-Location: ${ONION_ORIGIN + route}\n`;
-}).join('');
-await emit('_headers', '/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n/*\n  X-Content-Type-Options: nosniff\n' + onionHeaders);
+await emit('_headers', '/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n/*\n  X-Content-Type-Options: nosniff\n');
 const files = await readdir(path.join(dist, 'assets'));
 const scripts = await Promise.all(files.filter(f => f.endsWith('.js')).map(async file => {
   const content = await readFile(path.join(dist, 'assets', file));

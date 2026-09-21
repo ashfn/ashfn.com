@@ -21,7 +21,7 @@ try {
     page.on('request', r => { if (r.resourceType() === 'script') scripts.push(r.url()); });
     page.on('pageerror', e => errors.push(e.message));
     await page.goto(base, { waitUntil: 'networkidle' });
-    for (const name of ['github', 'linkedin', 'mail', 'tor']) await painted(page.locator(`[data-icon="${name}"]`).first());
+    for (const name of ['github', 'linkedin', 'mail']) await painted(page.locator(`[data-icon="${name}"]`).first());
     await painted(page.locator(`[data-theme-icon="${colorScheme === 'dark' ? 'moon' : 'sun'}"] [data-icon]`));
     await page.getByRole('checkbox', { name: 'Use alternate color theme' }).click();
     await painted(page.locator(`[data-theme-icon="${colorScheme === 'dark' ? 'sun' : 'moon'}"] [data-icon]`));
@@ -30,7 +30,6 @@ try {
     await page.screenshot({ path: `verification/safest-home-${width}-${colorScheme}.png` });
     await page.goto(base + '/blog/posts/finding-ashfncomabc/', { waitUntil: 'networkidle' });
     await painted(page.locator('article [data-icon="github"]').first());
-    await painted(page.locator('article [data-icon="tor"]').first());
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     if (width >= 1024) {
       const link = page.getByRole('navigation', { name: 'Table of contents' }).getByRole('link', { name: 'A cheaper curve walk', exact: true });
