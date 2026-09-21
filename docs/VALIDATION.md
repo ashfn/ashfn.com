@@ -40,34 +40,6 @@ The builder is Eleventy 3.1.6. Posts have descriptive filenames under `content/p
 
 `npm run test:editor` starts a disposable workspace and exercises new posts, rich MDX preview, saving, automatic Eleventy rebuilds, image uploads/insertion, outside-edit conflict rejection, invalid MDX/data rejection, project editing/reordering, and the responsive media library. The original content is never modified by that test.
 
-## Tor article — 16 September 2026
+## Release cleanup, 21 September 2026
 
-Added the published `finding-ashfncomabc` article, including Astra attribution, upstream repository links, LaTeX explanations of batch inversion and the Montgomery coordinate recurrence, and a static throughput graph. All 6,560 CSV samples reproduce the original experiment summary exactly: 2,150,017,007,616 candidates over 1,640.000109246 seconds, weighted throughput 1,310,985,892.9244118 candidates/sec. The favourite onion hostname passes the v3 checksum check.
-
-Build, TypeScript and all eight export tests passed. The expanded no-JavaScript suite passed all 44 content-page configurations (11 pages × two widths × two themes). Additional article checks confirmed 45 rendered KaTeX expressions with no errors, no horizontal page overflow, a loaded SVG, working data downloads, the native footer link and per-page Onion-Location metadata/HTTP headers in all four configurations. No browser JavaScript was requested. The onion service itself was not started or deployed.
-
-## Inline interactive chart — 16 September 2026
-
-Replaced the article’s embedded image with one inline SVG plot of the complete recorded throughput. It is drawn at build time and remains readable without JavaScript. Hovering, tapping or using the keyboard shows a compact tooltip with the sample time and measured rate. There is no chart library. The article-only interaction module is 2,611 bytes (1,255 bytes gzip); sample data is fetched once, on first interaction.
-
-`npm run test:chart` passes eight combinations of desktop/mobile, light/dark and scripting enabled/disabled. Checks cover measured tooltip values against the CSV, touch selection, keyboard navigation, lazy loading, article-only assets, unavailable-data fallback, all 45 rendered maths expressions and horizontal overflow. Screenshots were inspected at both widths. TypeScript and all eight export tests pass; the site-wide no-JavaScript suite also passed its 44 page configurations during this update.
-
-The opening now explains the Tor-site motivation, recognisable vanity prefixes, the GPU-mining analogy and why this became a CUDA experiment despite existing tools. The technical account, equations, measurements and repository credits remain in the article.
-
-## Running onion mirror and stricter-browser support — 16 September 2026
-
-The Docker service in `tor/` now runs the existing vanity onion identity and proxies HTTP requests to the local development server on port 4000. A separate temporary Tor client retrieved the homepage, article and stylesheet through the onion network and confirmed their bodies match the local site. The public proxy rejects editor routes, including encoded paths and a spoofed localhost Host header, while the local editor remains available. Only GET and HEAD are accepted. No Docker ports are published; the original identity directory is mounted read-only and excluded from the image build context. The temporary verification client was removed after testing.
-
-UI icons now share a 7.8 KB PNG mask sprite, retaining theme and hover colours without requiring SVG rendering or JavaScript. This covers theme, contact, Tor, GitHub, RSS, project, copy and JSON controls. The chart retains its interactive SVG when scripting is enabled and supplies light/dark static PNG fallbacks without scripting. The desktop contents list fits and scrolls within short windows; native anchor navigation highlights the selected section without JavaScript. Following the current section during manual scrolling still requires the optional article script.
-
-TypeScript, all eight export tests, the standard browser interaction suite, eight chart configurations and all 44 no-JavaScript configurations passed. The new `npm run test:safest` suite passed desktop/mobile and light/dark configurations in Firefox with JavaScript, SVGs and downloadable fonts disabled. It checks actual painted icon pixels, theme switching, loaded chart fallbacks, native contents navigation and highlighting, short-window contents scrolling, and zero requested scripts. Desktop and mobile screenshots were visually inspected. These are Firefox compatibility checks with restrictive settings, rather than an automated test of the Tor Browser application itself.
-
-## Article simplification — 16 September 2026
-
-Removed the throughput graph, CSV, summary JSON, SVG/PNG exports, chart component, browser module, stylesheet and generation utilities. This removes 1,379,439 bytes of source assets and code; the build no longer emits chart assets. The article retains the benchmark table and a concise longer-run average, then explains the running Docker mirror and the native HTML/CSS features that keep the site usable without JavaScript.
-
-TypeScript, all eight export tests, all 44 no-JavaScript configurations and four restrictive Firefox configurations passed. The export check now distinguishes prose mentioning `/editor/` from actual editor links or resources. The local onion proxy serves the updated article, and the removed CSV returns 404. Earlier chart measurements above describe previous revisions.
-
-## Onion features removed, 21 September 2026
-
-The published version no longer includes the onion footer, links to the onion service, Onion-Location metadata or headers, Tor icon support, or the Docker onion setup. The experiment article retains the generated address as plain text and says hosting is not ready. General no-JavaScript support remains. Earlier onion validation sections describe the locally preserved version, not the current release.
+Onion features and the vanity-address article are excluded from this release. The article and hosting work are preserved in a separate local backup. General no-JavaScript support remains.

@@ -28,23 +28,23 @@ try {
     assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), colorScheme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(15, 17, 19)');
     await page.getByRole('checkbox', { name: 'Use alternate color theme' }).click();
     await page.screenshot({ path: `verification/safest-home-${width}-${colorScheme}.png` });
-    await page.goto(base + '/blog/posts/finding-ashfncomabc/', { waitUntil: 'networkidle' });
+    await page.goto(base + '/blog/posts/5/', { waitUntil: 'networkidle' });
     await painted(page.locator('article [data-icon="github"]').first());
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     if (width >= 1024) {
-      const link = page.getByRole('navigation', { name: 'Table of contents' }).getByRole('link', { name: 'A cheaper curve walk', exact: true });
+      const link = page.getByRole('navigation', { name: 'Table of contents' }).getByRole('link', { name: 'The RAPTOR algorithm', exact: true });
       await link.click();
-      assert.ok(page.url().endsWith('#a-cheaper-curve-walk'));
-      assert.ok(await page.locator('#a-cheaper-curve-walk').evaluate(el => Math.abs(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)) < 2));
+      assert.ok(page.url().endsWith('#the-raptor-algorithm'));
+      assert.ok(await page.locator('#the-raptor-algorithm').evaluate(el => Math.abs(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)) < 2));
       assert.equal(await link.evaluate(el => getComputedStyle(el).opacity), '1');
       assert.equal(await link.evaluate(el => getComputedStyle(el, '::before').width), '1px');
       await page.screenshot({ path: `verification/safest-toc-${colorScheme}.png` });
-      await page.setViewportSize({ width, height: 360 });
+      await page.setViewportSize({ width, height: 160 });
       const toc = page.locator('[data-toc]');
       assert.ok(await toc.evaluate(el => el.scrollHeight > el.clientHeight));
-      await toc.getByRole('link', { name: 'Making it work without JavaScript', exact: true }).click();
+      await toc.getByRole('link', { name: 'Lessons learned', exact: true }).click();
       const box = await toc.boundingBox();
-      assert.ok(box.y >= 0 && box.y + box.height <= 360);
+      assert.ok(box.y >= 0 && box.y + box.height <= 160);
       await page.setViewportSize({ width, height: 900 });
     }
     await page.goto(base + '/blog/', { waitUntil: 'networkidle' });
