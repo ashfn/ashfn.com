@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.cache/
+.dist-build/
+.dist-previous/
+verification/
+*.tsbuildinfo
+.DS_Store
+
+tor/.env

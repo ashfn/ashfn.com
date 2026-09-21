@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="editor-token" content="__EDITOR_TOKEN__"><meta name="robots" content="noindex">
+  <title>Editor · Asher Falcon</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/editor/style.css">
+</head>
+<body>
+  <header class="masthead"><a href="/editor/" class="brand"><span class="brand-mark">a.</span> Asher Falcon <span class="muted">/ editor</span></a><div class="header-actions"><span class="local"><i></i> Local workspace</span><a href="/" target="_blank" rel="noopener">View site ↗</a></div></header>
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="section-label">CONTENT <button id="new-post" class="icon-button" title="New post" aria-label="New post">＋</button></div>
+      <label class="search-label"><span class="sr-only">Find a post</span><input id="post-search" type="search" placeholder="Find a post…" autocomplete="off"></label>
+      <nav id="post-list" aria-label="Blog posts"></nav>
+      <div class="section-label collection-label">COLLECTIONS</div>
+      <button id="projects-nav" class="nav-item"><span>Projects</span><small>projects.json</small></button>
+      <button id="media-nav" class="nav-item"><span>Images</span><small>public/media/</small></button>
+      <div class="sidebar-note">Just files. Yours to keep.<br><span>Changes save directly to this folder.</span></div>
+    </aside>
+    <main>
+      <div class="document-bar"><div><div id="document-label" class="eyebrow">YOUR WORKSPACE</div><div id="file-path" class="file-path">content/posts/</div></div><div class="document-actions"><span id="save-state" class="muted" role="status">Loading…</span><button id="reload" class="quiet">Reload</button><a id="open-page" class="button quiet" target="_blank" rel="noopener" href="/blog/">Open page ↗</a><button id="save" class="primary" disabled>Save changes</button></div></div>
+      <p id="message" class="message" role="alert" hidden></p>
+      <section id="post-panel" hidden>
+        <form id="post-form" autocomplete="off">
+          <input type="text" id="post-title" name="title" class="title-input" aria-label="Post title" placeholder="Untitled post" required>
+          <label class="description-label"><span class="sr-only">Description</span><textarea id="post-description" name="description" rows="2" placeholder="A short description for the blog index and search engines…"></textarea></label>
+          <div class="metadata"><label>Date<input id="post-date" name="date" type="date" required></label><label>URL slug<input id="post-slug" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label><label class="checkbox"><input id="post-hidden" name="hidden" type="checkbox"> Hidden from listings</label></div>
+          <p class="hint">Hidden posts remain accessible by their URL.</p>
+          <div class="editor-toolbar"><div class="segmented" aria-label="Editor view"><button type="button" data-view="write" aria-pressed="true">Write</button><button type="button" data-view="split" aria-pressed="false">Split</button><button type="button" data-view="preview" aria-pressed="false">Preview</button></div><div><span id="word-count" class="muted"></span><button type="button" id="insert-image" class="quiet">＋ Image</button></div></div>
+          <div id="writing-area" class="writing-area" data-view="write"><label class="sr-only" for="post-body">Article Markdown</label><textarea id="post-body" name="body" spellcheck="false" placeholder="Start writing in Markdown…"></textarea><iframe id="post-preview" title="Article preview" sandbox="allow-same-origin" hidden></iframe></div>
+          <div class="writing-footer"><span>Markdown &amp; MDX · drop an image to upload</span><span>⌘ / Ctrl S to save</span></div>
+        </form>
+      </section>
+      <section id="projects-panel" hidden>
+        <div class="section-heading"><div><h1>Projects</h1><p>Displayed in this order on your projects page.</p></div><div><button id="project-mode" class="quiet">Edit JSON</button><button id="add-project">＋ Project</button></div></div>
+        <div id="project-fields"></div><label for="projects-source" class="sr-only">Projects JSON</label><textarea id="projects-source" class="source" spellcheck="false" hidden></textarea>
+      </section>
+      <section id="media-panel" hidden>
+        <div class="section-heading"><div><h1>Images</h1><p>Original files in public/media/. Click an image to copy its path.</p></div><button id="upload-main">Upload images</button></div>
+        <input id="media-search" type="search" class="media-search" placeholder="Find an image…" aria-label="Find an image"><div id="media-grid" class="media-grid"></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="image-dialog"><div class="dialog-heading"><div><h2>Image library</h2><p>Choose an image to insert, or upload a new one.</p></div><button id="close-images" class="icon-button" aria-label="Close image library">×</button></div><div class="dialog-tools"><input id="image-search" type="search" placeholder="Find an image…" aria-label="Search image library"><button id="upload-dialog">Upload images</button></div><div id="image-grid" class="media-grid"></div></dialog>
+  <input id="image-upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" multiple hidden>
+  <script type="module" src="/editor/app.js"></script>
+</body>
+</html>

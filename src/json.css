@@ -1,0 +1,24 @@
+/* Matching the original react18-json-view display, with static HTML. */
+.json-view { display: block; color: #4d4d4d; text-align: left; --json-property: #009033; --json-index: #676dff; --json-number: #676dff; --json-string: #b2762e; --json-boolean: #dc155e; --json-null: #dc155e; }
+.json-view .json-view--property { color: var(--json-property); }
+.json-view .json-view--index { color: var(--json-index); }
+.json-view .json-view--number { color: var(--json-number); }
+.json-view .json-view--string { color: var(--json-string); }
+.json-view .json-view--boolean { color: var(--json-boolean); }
+.json-view .json-view--null { color: var(--json-null); }
+.json-view .jv-indent { padding-left: 1em; }
+.json-view .jv-chevron { display: inline-block; vertical-align: -20%; cursor: pointer; opacity: .4; width: 1em; height: 1em; }
+:is(.json-view .jv-chevron:hover, .json-view .jv-size:hover + .jv-chevron) { opacity: .8; }
+.json-view .jv-size { cursor: pointer; opacity: .4; font-size: .875em; font-style: italic; margin-left: .5em; vertical-align: -5%; line-height: 1; }
+.json-view .jv-button { background: transparent; outline: none; border: none; cursor: pointer; color: inherit; }
+.json-view svg { vertical-align: -10%; }
+.json-view_vscode { color: #005cc5; --json-property: #0451a5; --json-index: #0000ff; --json-number: #0000ff; --json-string: #a31515; --json-boolean: #0000ff; --json-null: #0000ff; }
+/* Native disclosure controls keep the original inline JSON layout. */
+.json-node { display: block; }
+.json-node > summary { display: block; cursor: pointer; list-style: none; }
+.json-node > summary::-webkit-details-marker { display: none; }
+.json-node > summary:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
+.json-node > summary [data-json-collapsed] { display: none; }
+.json-node:not([open]) > summary [data-json-expanded] { display: none; }
+.json-node:not([open]) > summary [data-json-collapsed] { display: inline; }
+.json-node:not([open]) > :not(summary) { display: none; }

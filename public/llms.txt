@@ -1,0 +1,25 @@
+# Asher Falcon
+
+> Asher Falcon is an 18-year-old student and software engineer interested in programming and mathematics, studying computer science, maths, and chemistry. This site is a personal portfolio and blog covering programming projects, ideas, and learning.
+
+## Pages
+
+- [Home](https://ashfn.com/): Introduction and links.
+- [Blog](https://ashfn.com/blog/): Posts on software engineering, maths, and side projects.
+- [Projects](https://ashfn.com/projects/): A showcase of personal and software projects.
+- [Contact](https://ashfn.com/contact/): Ways to get in touch.
+
+## Blog posts
+
+- [Live public transport routing](https://ashfn.com/blog/posts/5/): How public transit routers like Google Maps and CityMapper work, and building one for London supporting buses, tubes, and trains.
+- [Game of Life with Braille](https://ashfn.com/blog/posts/4/): Rendering Conway's Game of Life in the terminal using 2x4 Unicode braille characters in C++.
+- [Hiding messages in playing cards](https://ashfn.com/blog/posts/3/): Storing arbitrary data in the ordering of a 52-card deck using factoradic/permutation encoding.
+- [Storing images in DNS TXT records](https://ashfn.com/blog/posts/2/): Experiments storing image data inside DNS TXT records.
+- [Docker deployment](https://ashfn.com/blog/posts/1/): A shell script to automate deploying a docker-compose file to a server.
+- [Hello](https://ashfn.com/blog/posts/0/): A welcome post and test of the blog.
+
+## Links
+
+- [GitHub](https://github.com/ashfn)
+- [LinkedIn](https://www.linkedin.com/in/ashfn/)
+- [RSS feed](https://ashfn.com/rss.xml)

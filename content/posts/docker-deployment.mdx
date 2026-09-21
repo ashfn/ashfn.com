@@ -1,0 +1,131 @@
+---
+slug: "1"
+title: "Docker deployment"
+date: "2025-02-28"
+description: "Recently I found myself wanting to deploy a docker-compose file to a server. I wanted to automate this process as much as possible, so I decided to write a shell script to do it."
+---
+
+Recently I found myself wanting to deploy a docker-compose file to a server. I wanted to automate
+this process as much as possible, so I decided to write a shell script to do it. This post will
+go through the process of writing a shell script to deploy a docker-compose file to a server.
+
+**TLDR**, if you just want to check out the script and how to use it, you can find it
+[here](https://git.asherfalcon.com/asher/compose-deploy)
+
+As I started deploying more and more services to my server using docker compose, I kept just copying
+the whole file, sshing into the server, deleting the file and creating a new one, pasting the content.
+As you can imagine, that got old fast.
+
+Realising I was losing an extra minute or two every time I wanted to re-deploy my **docker-compose.yml** file,
+I created a simple git repository, and cloned it on both hosts. This meant I could simply push on my laptop
+and ssh into the server and run git pull, and I would never have to mess around with copying the whole file manually again.
+
+Now I was still having to ssh in and stop all the containers, pull the repo and then start them again,
+and I thought it would be nice if I could just do this from the terminal in the VSCode editor I used to
+edit the docker-compose.yml file, so I wrote a simple script which does all of it for me.
+
+```bash
+#!/bin/bash
+git add .
+git commit -m "updated docker-compose.yml"
+git push
+
+ssh -o "StrictHostKeyChecking=no" -i ssh.key $CD_USER@$CD_HOST << EOF
+sudo su
+cd $CD_PATH
+docker compose down
+git pull
+docker compose up -d
+exit
+EOF
+```
+
+So what's going on here? Firstly we commit and push all the changed files to the repository, this means
+that the docker-compose.yml and any other files, for example config files for services you may be running,
+are now on the remote repository.
+
+Next, it simply connects to the server via ssh, and runs the commands listed. Firstly, stopping the containers
+so that the docker-compose.yml and any other config files can be updated safely, then pulling the git repo to
+update the files. Finally restarting the docker compose services, and then exiting so the ssh session closes.
+
+Now to make the commit history not look like groundhog day, and to add some commit messages, we can use
+[Gum](https://github.com/charmbracelet/gum)
+, a tool for easily making interactive bash scripts. It works by installing the application onto your system
+which can then be called inside your bash scripts to invoke user prompts, for example we can use the code below
+to get a commit message from the user in the terminal and store it as a variable.
+
+```bash
+#!/bin/bash
+message=$(gum input --placeholder "Commit message")
+git add .
+git commit -m "${message}"
+```
+
+Finally, putting all the pieces together and adding a quick check to see if gum is installed,
+and trying to install it if not, we can arrive at the following script:
+
+```bash
+#!/bin/bash
+
+# A script to redeploy this docker infrastructure using ssh
+
+if [ -f .env ]; then
+    source .env
+else
+    echo ".env file not found. Please create it and set the necessary environment variables."
+    exit 1
+fi
+
+check_gum() {
+    if command -v gum &> /dev/null; then
+        return 0
+    else
+        echo "Gum not found, installing..."
+        return 1
+    fi
+}
+
+install_gum() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        brew install gum
+    elif [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        if [[ $ID == "ubuntu" ]] || [[ $ID == "debian" ]]; then
+            sudo apt update
+            sudo apt install -y gum
+        elif [[ $ID == "fedora" ]] || [[ $ID == "centos" ]] || [[ $ID == "rhel" ]]; then
+            sudo dnf install -y gum
+        else
+            echo "Unsupported Linux distribution. Please install Gum manually."
+            exit 1
+        fi
+    else
+        echo "Unsupported operating system. Please install Gum manually."
+        exit 1
+    fi
+}
+
+# Main script execution
+if ! check_gum; then
+    if ! install_gum; then
+        echo "Failed to install Gum. Please install it manually and run the script again."
+        exit 1
+    fi
+fi
+
+message=$(gum input --placeholder "Commit message")
+
+git add .
+git commit -m "${message}"
+git push
+
+ssh -o "StrictHostKeyChecking=no" -i ssh.key $CD_USER@$CD_HOST << EOF
+sudo su
+cd $CD_PATH
+docker compose down
+git pull
+docker compose up -d
+exit
+EOF
+```

@@ -1,0 +1,92 @@
+[
+  {
+    "title": "London Raptor",
+    "description": "A public transport routing system using the RAPTOR algorithm for London. Supports buses, tubes, and trains with walking connections, pulling live data from various sources.",
+    "image": "/media/posts/live-public-transport-routing/london-raptor-output.png",
+    "links": [
+      {
+        "type": "repository",
+        "href": "https://github.com/ashfn/london-raptor",
+        "label": "Source"
+      },
+      {
+        "type": "blog",
+        "href": "/blog/posts/5/",
+        "label": "Blog post"
+      },
+      {
+        "type": "youtube",
+        "href": "https://www.youtube.com/watch?v=9TRtHZlRWHg",
+        "label": "Demo"
+      }
+    ]
+  },
+  {
+    "title": "Life",
+    "description": "Conway's Game of Life in the terminal, using braille characters for rendering.",
+    "image": "/media/projects/life.gif",
+    "links": [
+      {
+        "type": "repository",
+        "href": "https://github.com/ashfn/life",
+        "label": "Source"
+      },
+      {
+        "type": "blog",
+        "href": "/blog/posts/4/",
+        "label": "Blog post"
+      }
+    ]
+  },
+  {
+    "title": "DeckCrypt",
+    "description": "A tool that lets you store 45 character messages inside a deck of cards using the order of the cards.",
+    "image": "/media/projects/deckcrypt.png",
+    "links": [
+      {
+        "type": "repository",
+        "href": "https://github.com/ashfn/deckcrypt",
+        "label": "Source"
+      },
+      {
+        "type": "preview",
+        "href": "https://deckcrypt.github.io",
+        "label": "Live site"
+      },
+      {
+        "type": "blog",
+        "href": "/blog/posts/3/",
+        "label": "Blog post"
+      }
+    ]
+  },
+  {
+    "title": "tuneguessr",
+    "description": "A game built with Spotify's API where you guess the song from a snippet of audio.",
+    "image": "/media/projects/tuneguessr.png",
+    "links": [
+      {
+        "type": "repository",
+        "href": "https://github.com/ashfn/song-guesser",
+        "label": "Source"
+      },
+      {
+        "type": "youtube",
+        "href": "https://www.youtube.com/watch?v=zbDU0qnwpSY",
+        "label": "Demo"
+      }
+    ]
+  },
+  {
+    "title": "islechat",
+    "description": "A discord-like chat server built in Go that uses SSH for a frontend. Try it out with ssh username@isle.chat",
+    "image": "/media/projects/islechat.png",
+    "links": [
+      {
+        "type": "repository",
+        "href": "https://github.com/ashfn/islechat",
+        "label": "Source"
+      }
+    ]
+  }
+]

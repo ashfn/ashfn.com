@@ -1,0 +1,97 @@
+---
+slug: "4"
+title: "Game of Life with Braille"
+date: "2025-08-12"
+description: "Using braille characters, we can render Conway's Game of Life in the terminal. This post goes through how we can use the 2x4 braille characters to display our map in C++."
+---
+
+Using braille characters, we can render conways game of life in the terminal. This post goes through
+how we can use the 2x4 braille characters to display our map in C++.
+
+Ever came across one of $⠗$ these? These patterns of dots are called braille
+characters, and are used by people with visual impairments to read and write. Each different
+arrangement of the 6 dots makes a different character, here are the 26 letters of the english
+alphabet in braille:
+
+$$
+\begin{array}{|c|c|c|c|c|c|c|}
+\hline
+\text{A} & \text{B} & \text{C} & \text{D} & \text{E} & \text{F} & \text{G} \\
+\text{⠁} & \text{⠃} & \text{⠉} & \text{⠙} & \text{⠑} & \text{⠋} & \text{⠛} \\
+\hline
+\text{H} & \text{I} & \text{J} & \text{K} & \text{L} & \text{M} & \text{N} \\
+\text{⠓} & \text{⠊} & \text{⠚} & \text{⠅} & \text{⠇} & \text{⠍} & \text{⠝} \\
+\hline
+\text{O} & \text{P} & \text{Q} & \text{R} & \text{S} & \text{T} & \text{U} \\
+\text{⠕} & \text{⠏} & \text{⠟} & \text{⠗} & \text{⠎} & \text{⠞} & \text{⠥} \\
+\hline
+\text{V} & \text{W} & \text{X} & \text{Y} & \text{Z} & & \\
+\text{⠧} & \text{⠺} & \text{⠭} & \text{⠽} & \text{⠵} & & \\
+\hline
+\end{array}
+$$
+
+But there's actually more. If you look at the
+[wikipedia page](https://en.wikipedia.org/wiki/Braille_Patterns)
+about Braille characters, you'll see some extra dots! There is a version of Braille called
+**Computer Braille**, which has 8 dots to add more symbols for the use of computers,
+such as parentheses or brackets that are needed for programming.
+
+So, there are $2^8 = 256$ Braille characters in the Unicode block, which starts
+at U+2800 and ends at U+28FF. I thought it would be a fun idea to use these characters to render the
+cells in Conway's Game of Life, a famous cellular automaton where four rules create complex and
+beautiful patterns.
+
+In order to render cells, we need to be able to get the Braille character for a given section of
+the map, which we will split up into small 2x4 blocks. Because Braille was originally only six dots,
+the numbering is a little bit strange. As you can see in the animation below, using the indexes of
+the dots, we can get 8 bits from whether each dot is present. We take the hexadecimal of these 8
+bits and add it to U+2800, the first character in the block, to get the specific Braille character.
+
+![Braille encoding animation](/media/posts/game-of-life-with-braille/braille-encoding-animation.gif)
+
+However, we're doing this in C++ and normally if you want to print a specific character like this,
+we would use escape codes. For example the C++ code to print the character in the previous demo
+above would be `std::cout &lt;&lt; "\u289B"` but we want to get them
+programmatically, and escape codes can't be used partly, like printing the \u28 and then using
+logic to print the 9B.
+
+You have to have it all in one place if you want to use it like that, and I **really**
+don't want to make a lookup table for every character. So, we can print it using UTF-8, we make
+a 4 byte array and fill it in with our data. We are using U+2800 to U+28FF, so we are using the
+third row in the table below. In C++ I did this by making a 4 char array and filling it with our
+values with some bitwise operations, because our 16 bits for 0x289B, for example, must be split
+between the three bytes.
+
+![UTF-8 Table](/media/posts/game-of-life-with-braille/utf8-table.png)
+
+We add our 8 bits from the Braille conversion to `0x2800`, and we know our
+first byte will always be $11100010$ because our 16 bits always start with the
+2800. For the next byte we can just shift our sum 6 bits to the right and do a bitwise AND with
+`0x3F` then a bitwise OR with 0x80. We do something similar for the
+penultimate byte. We leave the last byte empty as our null terminator. The code for this is below:
+
+```c
+char utf8[4] = {0};
+uint16_t codepoint = 0x2800 + sum;
+utf8[0] = 0xE2;
+utf8[1] = 0x80 | ((codepoint >> 6) & 0x3F);
+utf8[2] = 0x80 | (codepoint & 0x3F);
+std::cout << utf8;
+```
+
+After that, there's nothing especially complicated in getting it to run Conway's Game of Life.
+I won't get into how the game works because there will be countless better explanations out there,
+but I used a vector of bitsets to store my map, and I loop through the top left of where each
+Braille character would be and then make a character for that 2x4 block, print it, and then after
+the whole row is done, do a new line.
+
+I added some ANSI codes to clear the screen and update the window title with some stats, like
+cells alive. An example of what the output looks like is below, on a 50x50 grid. For now I'm
+just passing some random numbers to decide the initial state, but I'm sure you could play around
+with letting the user interact to change tiles.
+
+![Game of Life](/media/posts/game-of-life-with-braille/game-of-life.gif)
+
+Thanks for reading, the code is
+[here](https://github.com/ashfn/life). If you have any questions or comments, feel free to reach out.

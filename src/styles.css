@@ -1,0 +1,439 @@
+@import "tailwindcss" source(none);
+@source "./";
+@source "../content";
+@source "../scripts/render-site.tsx";
+
+/* Light theme (default). Dark values live in the two blocks below: one for the
+   system preference, one for an explicit choice from the theme toggle. */
+:root {
+  color-scheme: light;
+  --error-background: #fff; --error-foreground: #000; --error-border: rgba(0, 0, 0, .3);
+
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --ashgreen: #1a8f5c;
+  --ashgreen-light: #2ab87a;
+  --page-bg: #ffffff;
+
+  /* Surfaces and hairlines, so components don't hardcode black alphas */
+  --surface: rgba(0, 0, 0, 0.03);
+  --surface-hover: rgba(0, 0, 0, 0.06);
+  --border: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.15);
+
+  /* Syntax highlighting (atom-one-light) */
+  --hl-keyword: #a626a4;
+  --hl-string: #50a14f;
+  --hl-number: #986801;
+  --hl-function: #4078f2;
+  --hl-comment: #a0a1a7;
+  --hl-type: #c18401;
+  --hl-variable: #e45649;
+
+  --json-index-color: #4f46e5;
+  --json-flag-color: #dc155e;
+  --theme-sun-opacity: 1; --theme-sun-transform: rotate(0deg) scale(1);
+  --theme-moon-opacity: 0; --theme-moon-transform: rotate(90deg) scale(.4);
+}
+
+/* System preference, unless the toggle has explicitly asked for light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --theme-sun-opacity: 0; --theme-sun-transform: rotate(-90deg) scale(.4);
+  --theme-moon-opacity: 1; --theme-moon-transform: rotate(0deg) scale(1);
+    color-scheme: dark;
+  --error-background: #000; --error-foreground: #fff; --error-border: rgba(255, 255, 255, .3);
+
+    --background: #0f1113;
+    --foreground: #e8e6e3;
+    --ashgreen: #35c98a;
+    --ashgreen-light: #57e0a5;
+    --page-bg: #0f1113;
+
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-hover: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-subtle: rgba(255, 255, 255, 0.18);
+
+    /* atom-one-dark */
+    --hl-keyword: #c678dd;
+    --hl-string: #98c379;
+    --hl-number: #d19a66;
+    --hl-function: #61afef;
+    --hl-comment: #7f848e;
+    --hl-type: #e5c07b;
+    --hl-variable: #e06c75;
+
+    --json-index-color: #a5b4fc;
+    --json-flag-color: #f472b6;
+  }
+}
+
+/* Explicit dark choice from the toggle */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --error-background: #000; --error-foreground: #fff; --error-border: rgba(255, 255, 255, .3);
+
+  --background: #0f1113;
+  --foreground: #e8e6e3;
+  --ashgreen: #35c98a;
+  --ashgreen-light: #57e0a5;
+  --page-bg: #0f1113;
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.18);
+
+  --hl-keyword: #c678dd;
+  --hl-string: #98c379;
+  --hl-number: #d19a66;
+  --hl-function: #61afef;
+  --hl-comment: #7f848e;
+  --hl-type: #e5c07b;
+  --hl-variable: #e06c75;
+
+  --json-index-color: #a5b4fc;
+  --json-flag-color: #f472b6;
+  --theme-sun-opacity: 0; --theme-sun-transform: rotate(-90deg) scale(.4);
+  --theme-moon-opacity: 1; --theme-moon-transform: rotate(0deg) scale(1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ashgreen: var(--ashgreen);
+  --color-ashgreen-light: var(--ashgreen-light);
+}
+
+html {
+  /* Reserve the scrollbar on every page, so a short page and a long one centre
+     their content identically (the back arrow has to land on the same pixel). */
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--foreground);
+}
+
+/* Theme change: crossfade the page where View Transitions are supported */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: ease;
+}
+
+/* The snapshot overlay sits above the page while the crossfade runs. Left
+   hit-testable it swallows hover, so the pointer cursor over the theme toggle
+   reverts to an arrow mid-animation; this lets events reach the real button. */
+::view-transition,
+::view-transition-group(*),
+::view-transition-image-pair(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  pointer-events: none;
+}
+
+/* Fallback for browsers without View Transitions: transition colours
+   everywhere for the length of the switch, then get out of the way. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 320ms ease, border-color 320ms ease,
+    color 320ms ease, fill 320ms ease, stroke 320ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
+  html.theme-transition,
+  html.theme-transition * {
+    transition: none !important;
+  }
+}
+
+/* Selection - only on text elements */
+p::selection, span::selection, a::selection,
+h1::selection, h2::selection, h3::selection,
+li::selection, code::selection, strong::selection,
+em::selection, blockquote::selection {
+  background: var(--ashgreen);
+  color: #ffffff;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hide scrollbars */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* JSON viewer custom colors */
+.json-view {
+  color: var(--foreground);
+  --json-property: var(--ashgreen);
+  --json-index: var(--json-index-color);
+  --json-number: var(--json-index-color);
+  --json-string: var(--ashgreen);
+  --json-boolean: var(--json-flag-color);
+  --json-null: var(--json-flag-color);
+}
+
+/* Link styling */
+@layer base {
+  a {
+    color: var(--ashgreen);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+}
+
+article a:hover {
+  color: var(--ashgreen-light);
+  text-decoration: underline;
+}
+
+/* Headings are scroll targets for the table of contents */
+article h2[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* Code block styling */
+pre {
+  background: var(--surface) !important;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  /* The highlighter's inline theme used to supply this; tokens are now
+     class-based, so the scroll container has to be declared here. */
+  overflow-x: auto;
+}
+
+pre code.hljs,
+pre .hljs {
+  color: var(--foreground);
+  background: transparent;
+}
+
+/* Syntax tokens are emitted as classes (not inline styles) so they can follow
+   the active theme. Palette: atom-one-light / atom-one-dark. */
+.hljs-comment,
+.hljs-quote {
+  color: var(--hl-comment);
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-formula,
+.hljs-keyword {
+  color: var(--hl-keyword);
+}
+
+.hljs-deletion,
+.hljs-name,
+.hljs-section,
+.hljs-selector-tag,
+.hljs-subst {
+  color: var(--hl-variable);
+}
+
+.hljs-literal,
+.hljs-number,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-pseudo {
+  color: var(--hl-number);
+}
+
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string,
+.hljs-regexp,
+.hljs-string {
+  color: var(--hl-string);
+}
+
+.hljs-attr,
+.hljs-built_in,
+.hljs-class .hljs-title,
+.hljs-title,
+.hljs-title.function_ {
+  color: var(--hl-function);
+}
+
+.hljs-bullet,
+.hljs-class,
+.hljs-params,
+.hljs-symbol,
+.hljs-title.class_,
+.hljs-type {
+  color: var(--hl-type);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+/* KaTeX styling */
+.katex {
+  color: var(--foreground);
+}
+
+/* The original 300ms page fade, implemented without an animation runtime. */
+@keyframes page-enter { from { opacity: 0; } to { opacity: 1; } }
+.page-transition { animation: page-enter 300ms ease-in-out; }
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+html { scroll-behavior: smooth; }
+.toc-link { color: var(--foreground); opacity: .35; transition: opacity 150ms ease-out; }
+.toc-link:hover { color: var(--ashgreen-light); opacity: 1; }
+.toc-link[aria-current] { color: var(--ashgreen); opacity: 1; transition: color 300ms ease-out, opacity 300ms ease-out; }
+[data-theme-icon="sun"] { opacity: var(--theme-sun-opacity); transform: var(--theme-sun-transform); }
+[data-theme-icon="moon"] { opacity: var(--theme-moon-opacity); transform: var(--theme-moon-transform); }
+label:has(#theme-toggle:focus-visible) { outline: 2px solid var(--ashgreen); outline-offset: 3px; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page-transition { animation: none; }
+  [data-theme-icon], .toc-link, [data-toc-indicator] { transition: none; }
+}
+
+/* Native checkbox inverts the current theme, even with scripts disabled. */
+:root:has(#theme-toggle:checked) {
+  color-scheme: dark;
+  --error-background: #000; --error-foreground: #fff; --error-border: rgba(255, 255, 255, .3);
+
+  --background: #0f1113;
+  --foreground: #e8e6e3;
+  --ashgreen: #35c98a;
+  --ashgreen-light: #57e0a5;
+  --page-bg: #0f1113;
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.18);
+
+  --hl-keyword: #c678dd;
+  --hl-string: #98c379;
+  --hl-number: #d19a66;
+  --hl-function: #61afef;
+  --hl-comment: #7f848e;
+  --hl-type: #e5c07b;
+  --hl-variable: #e06c75;
+
+  --json-index-color: #a5b4fc;
+  --json-flag-color: #f472b6;
+  --theme-sun-opacity: 0; --theme-sun-transform: rotate(-90deg) scale(.4);
+  --theme-moon-opacity: 1; --theme-moon-transform: rotate(0deg) scale(1);
+}
+:root[data-theme="dark"]:has(#theme-toggle:checked) {
+  color-scheme: light;
+  --error-background: #fff; --error-foreground: #000; --error-border: rgba(0, 0, 0, .3);
+
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --ashgreen: #1a8f5c;
+  --ashgreen-light: #2ab87a;
+  --page-bg: #ffffff;
+
+  /* Surfaces and hairlines, so components don't hardcode black alphas */
+  --surface: rgba(0, 0, 0, 0.03);
+  --surface-hover: rgba(0, 0, 0, 0.06);
+  --border: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.15);
+
+  /* Syntax highlighting (atom-one-light) */
+  --hl-keyword: #a626a4;
+  --hl-string: #50a14f;
+  --hl-number: #986801;
+  --hl-function: #4078f2;
+  --hl-comment: #a0a1a7;
+  --hl-type: #c18401;
+  --hl-variable: #e45649;
+
+  --json-index-color: #4f46e5;
+  --json-flag-color: #dc155e;
+  --theme-sun-opacity: 1; --theme-sun-transform: rotate(0deg) scale(1);
+  --theme-moon-opacity: 0; --theme-moon-transform: rotate(90deg) scale(.4);
+}
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme="light"]):has(#theme-toggle:checked) {
+  color-scheme: light;
+  --error-background: #fff; --error-foreground: #000; --error-border: rgba(0, 0, 0, .3);
+
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --ashgreen: #1a8f5c;
+  --ashgreen-light: #2ab87a;
+  --page-bg: #ffffff;
+
+  /* Surfaces and hairlines, so components don't hardcode black alphas */
+  --surface: rgba(0, 0, 0, 0.03);
+  --surface-hover: rgba(0, 0, 0, 0.06);
+  --border: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.15);
+
+  /* Syntax highlighting (atom-one-light) */
+  --hl-keyword: #a626a4;
+  --hl-string: #50a14f;
+  --hl-number: #986801;
+  --hl-function: #4078f2;
+  --hl-comment: #a0a1a7;
+  --hl-type: #c18401;
+  --hl-variable: #e45649;
+
+  --json-index-color: #4f46e5;
+  --json-flag-color: #dc155e;
+  --theme-sun-opacity: 1; --theme-sun-transform: rotate(0deg) scale(1);
+  --theme-moon-opacity: 0; --theme-moon-transform: rotate(90deg) scale(.4);
+}
+}
+[data-theme-icon] { pointer-events: none; }
+
+/* Center inline favicons on the font's capital letters, preserving text wrapping. */
+.external-link-icon {
+  vertical-align: -2.4px;
+  vertical-align: calc(0.5cap - 8px);
+}
+
+/* Raster masks remain visible when Tor's Safest mode disables SVG. */
+.site-icon {
+  display: block; flex-shrink: 0; vertical-align: middle;
+  background-color: currentColor;
+  mask-image: url('/icons/ui.png'); mask-repeat: no-repeat; mask-mode: alpha;
+}
+
+.toc-nav { width:min(180px, calc((100vw - 672px)/2 - 64px));max-height:calc(100dvh - 4rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-behavior:auto }
+.toc-link { position:relative }
+html:not([data-js]):not(:has(article :target)) [data-toc] li:first-child a {color:var(--ashgreen);opacity:1}
+html:not([data-js]):not(:has(article :target)) [data-toc] li:first-child a::before {content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:currentColor}

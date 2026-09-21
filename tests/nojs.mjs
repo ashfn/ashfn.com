@@ -1,0 +1,73 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { existsSync, writeFileSync, readdirSync } from 'node:fs';
+const base = process.env.SITE_URL || 'http://localhost:4000';
+const executablePath = process.env.CHROME_PATH || (existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome') ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined);
+const browser = await chromium.launch({ executablePath, headless: true });
+const results = [];
+const routes = ['/', '/blog/', '/projects/', ...readdirSync('dist/blog/posts', { withFileTypes: true }).filter(entry => entry.isDirectory()).map(entry => `/blog/posts/${entry.name}/`)];
+for (const width of [1440, 390]) for (const colorScheme of ['light', 'dark']) {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 }, colorScheme, reducedMotion: 'reduce' });
+  const scripts = [], errors = [];
+  const page = await context.newPage();
+  page.on('request', request => { if (request.resourceType() === 'script') scripts.push(request.url()); });
+  page.on('pageerror', error => errors.push(error.message));
+  await context.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.fulfill({ body: '', contentType: 'text/plain' }));
+  for (const route of routes) {
+    const response = await page.goto(base + route, { waitUntil: 'load' });
+    assert.equal(response.status(), 200, route);
+    assert.ok(await page.locator('h1').isVisible(), route);
+    assert.equal(await page.locator('html').getAttribute('data-js'), null, 'No bootstrap script ran');
+    const before = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
+    assert.equal(before, colorScheme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(15, 17, 19)');
+    const control = page.getByRole('checkbox', { name: 'Use alternate color theme' });
+    await control.check();
+    const after = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
+    assert.equal(after, colorScheme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(15, 17, 19)', `${route}: native theme switch`);
+    await control.uncheck();
+    assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), before);
+    for (const code of await page.locator('pre').all()) assert.ok(await code.isVisible());
+    results.push({ route, width, colorScheme, readable: true, themeSwitch: true });
+  }
+  await page.goto(base);
+  assert.equal(await page.getByRole('link', { name: 'Send an email' }).getAttribute('href'), 'mailto:' + ['af', ['ashfn', 'com'].join('.')].join('@'));
+  await page.getByRole('link', { name: 'Blog', exact: true }).click();
+  await page.waitForURL('**/blog/');
+  await page.getByRole('link').filter({ hasText: 'Live public transport routing' }).click();
+  await page.waitForURL('**/blog/posts/5/');
+  const firstFold = page.locator('.json-node:not([open])').first();
+  await firstFold.locator(':scope > summary').click();
+  assert.ok(await page.locator('.json-view_vscode').getByText('origin', { exact: true }).first().isVisible());
+  const rootSummary = page.locator('.json-node > summary').first();
+  await rootSummary.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('.json-node').first().getAttribute('open'), null);
+  await page.keyboard.press('Space');
+  assert.notEqual(await page.locator('.json-node').first().getAttribute('open'), null);
+  assert.ok(await page.getByRole('link', { name: 'Watch this video on YouTube' }).isVisible());
+  assert.equal(await page.locator('[data-video]').isVisible(), false);
+  if (width >= 1024) {
+    await page.getByRole('navigation', { name: 'Table of contents' }).getByRole('link', { name: 'Lessons learned' }).click();
+    assert.ok(page.url().endsWith('#lessons-learned'));
+    assert.ok(await page.locator('#lessons-learned').isVisible());
+  }
+  await page.goto(base + '/blog/posts/1/');
+  const expectedCode = await page.locator('pre code').first().textContent();
+  await page.getByRole('link', { name: 'Open code as plain text' }).first().click();
+  assert.ok(/\/code\/[a-f0-9]+\.txt$/.test(page.url()));
+  assert.equal(await page.locator('body').textContent(), expectedCode);
+  await page.goto(base + '/blog/posts/3/');
+  assert.ok(await page.locator('.katex').first().isVisible());
+  await page.goto(base + '/blog/5/');
+  await page.waitForURL('**/blog/posts/5/');
+  await page.goto(base + '/contact/');
+  await page.waitForURL(base + '/');
+  assert.equal((await page.goto(base + '/does-not-exist/')).status(), 404);
+  assert.equal(await page.locator('h1').textContent(), '404');
+  assert.deepEqual(scripts, [], 'No JavaScript requested');
+  assert.deepEqual(errors, []);
+  console.log(`No-JS passed at ${width}px / ${colorScheme}: ${routes.length} pages, themes, navigation, mailto, native JSON, code text, TOC, video fallback, math, redirects, 404; zero script requests.`);
+  await context.close();
+}
+await browser.close();
+writeFileSync('verification/nojs-results.json', JSON.stringify({ results, scriptRequests: 0 }, null, 2) + '\n');

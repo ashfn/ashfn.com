@@ -1,0 +1,113 @@
+---
+slug: "5"
+title: "Live public transport routing"
+date: "2025-10-26"
+description: "We've all used a public transit router to find a quick route from A to B, such as Google Maps or CityMapper, but how do they actually work?"
+---
+
+We've all used a public transit router to find a quick route from A to B, such as Google Maps
+or CityMapper, but how do they actually work? In this post I will discuss how I tried to build
+my own public transport routing system for London that supports buses, tubes and trains.
+
+The algorithm I chose to implement is called **RAPTOR** (Round-Based Public Transit
+Routing), which is a fast algorithm specifically designed for public transport routing. Unlike
+traditional graph-based shortest path algorithms, RAPTOR operates in rounds, where each round
+corresponds to one additional transit trip.
+
+## Data sources
+
+The first challenge was getting the data. For London's public transport, I needed:
+
+- Static timetable data (GTFS format from TfL and National Rail)
+- Real-time arrival predictions (TfL Unified API)
+- Live train times (National Rail Darwin API)
+- Walking connections between nearby stops
+
+For example, here's what the live train data looks like from Victoria station - you can see
+departures, arrivals, delays, and all the calling points:
+
+<JsonViewer json={{
+  "trainServices": [
+    {
+      "origin": [{ "locationName": "London Victoria", "crs": "VIC" }],
+      "destination": [{ "locationName": "Portsmouth Harbour", "crs": "PMH", "via": "via Hove & Worthing" }],
+      "std": "18:16",
+      "etd": "18:20",
+      "operator": "Southern",
+      "operatorCode": "SN",
+      "serviceType": "train",
+      "subsequentCallingPoints": [
+        {
+          "callingPoint": [
+            { "locationName": "Clapham Junction", "crs": "CLJ", "st": "18:22", "et": "18:26" },
+            { "locationName": "East Croydon", "crs": "ECR", "st": "18:32", "et": "18:35" },
+            { "locationName": "Gatwick Airport", "crs": "GTW", "st": "18:47", "et": "18:50" }
+          ]
+        }
+      ]
+    },
+    {
+      "origin": [{ "locationName": "Brighton", "crs": "BTN" }],
+      "destination": [{ "locationName": "London Victoria", "crs": "VIC" }],
+      "sta": "18:16",
+      "eta": "18:25",
+      "operator": "Southern",
+      "operatorCode": "SN",
+      "serviceType": "train",
+      "delayReason": "This service has been delayed by a speed restriction"
+    }
+  ]
+}} depth={2} />
+
+## The RAPTOR algorithm
+
+RAPTOR works by exploring routes in "rounds". In round 0, we start at our origin. In round 1,
+we find all stops reachable with one transit trip. In round 2, all stops reachable with two
+trips, and so on. The key insight is that we only need to explore trips that could potentially
+improve our arrival time.
+
+The algorithm maintains the earliest arrival time at each stop. When we board a transit vehicle,
+we scan through its route and update arrival times at each stop along the way. If we improve
+the arrival time at a stop, we mark it for exploration in the next round.
+
+## Handling real-time data
+
+The tricky part is incorporating live data. Trains get delayed, buses get stuck in traffic,
+and tubes have frequent disruptions. I had to build a system that:
+
+- Fetches real-time predictions on demand
+- Overrides scheduled times with live estimates
+- Handles cancellations gracefully
+- Caches data to avoid hitting API rate limits
+
+## The result
+
+After a lot of work, I have a working router that can find routes across London using live
+data! Here's a screenshot of the output:
+
+![London Raptor output](/media/posts/live-public-transport-routing/london-raptor-output.png)
+
+The code is available on
+[GitHub](https://github.com/ashfn/london-raptor). I also made a video demo showing it in action:
+
+<iframe
+width="560"
+height="315"
+src="https://www.youtube.com/embed/9TRtHZlRWHg"
+title="YouTube video player"
+frameBorder="0"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+allowFullScreen
+className="rounded-lg"
+/>
+
+## Lessons learned
+
+Building this taught me a lot about:
+
+- Working with complex data formats (GTFS is surprisingly messy)
+- Algorithm optimization (RAPTOR is fast but there's lots of room for improvement)
+- API integration and caching strategies
+- The complexity behind apps like Google Maps that we take for granted
+
+If you have any questions or comments, feel free to reach out.
