@@ -37,3 +37,12 @@ git -C ../ashfn.github.io push
 The copy replaces the previous export. GitHub Pages serves `main` from the root
 of `ashfn.github.io`. `CNAME` keeps the domain as `ashfn.com`.
 Only static files are published. The editor and build tools stay local.
+
+## Tor mirror
+
+The homepage includes the onion address. Pages include Onion-Location metadata
+for Tor Browser, and the site works with JavaScript disabled.
+
+The container in `tor/server/` serves the published files and checks GitHub every
+five minutes. See [the server guide](tor/server/README.md) for maintenance.
+Private keys and local deployment notes stay outside Git.

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { iconNames, type IconName } from '../lib/icons';
 
-// A PNG alpha mask keeps currentColor/theme support when SVG rendering is disabled.
+// A PNG alpha mask keeps currentColor/theme support when Tor disables SVG.
 export default function Icon({ name, size = 16, className = '', style }: {
   name: IconName; size?: number; className?: string; style?: CSSProperties;
 }) {

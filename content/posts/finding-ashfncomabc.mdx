@@ -1,0 +1,73 @@
+---
+title: 'Finding ashfncomabc'
+date: '2026-09-14'
+description: 'Guiding GPT-6 Astra through roughly 20 minutes of CUDA optimisation, reaching 1.338 billion candidates per second on an RTX 3070, and finding a recognisable onion address.'
+hidden: false
+---
+
+<div className="space-y-6">
+
+I wanted to make a Tor version of this site, partly to try running an onion service myself. Before I got very far with the hosting, though, I got distracted by the address.
+
+## Why a vanity address?
+
+A Tor v3 address is 56 base32 characters followed by `.onion`. It comes from a cryptographic public key, so you cannot simply register `ashfncom.onion` as you would a normal domain.
+
+I wanted a recognisable prefix that connected the address to this site. Getting one means searching through candidates until a public key produces the letters you want. It does not shorten the address or replace checking the full hostname, but it makes it easier to recognise when sharing or bookmarking it.
+
+## Why try a GPU?
+
+[cathugger’s mkp224o](https://github.com/cathugger/mkp224o) could already find the address on a CPU. But I had an RTX 3070 and wanted to see how much faster the search could run on it.
+
+Cryptocurrency mining was the example I had in mind: [early GPU miners](https://raw.githubusercontent.com/ckolivas/cgminer/v3.7.2/README) showed how effective GPUs could be at repetitive cryptographic work. This search uses different calculations, so it needed benchmarking rather than assuming the same speedup would apply.
+
+The machine had a Ryzen 7 2700X and an RTX 3070 with 8 GiB of VRAM. After trying several mkp224o backends and thread counts, the CPU baseline reached a median of **42.029 million candidates/sec** across three 30-second runs. The GPU stayed at its default 220 W power cap, with no changes to clocks or fan settings.
+
+## About twenty minutes with Astra
+
+I had never written CUDA kernels before, so I used OpenAI’s new [GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra) to help build the GPU version. Over roughly twenty minutes, I guided it towards one goal: more candidates checked per second on my 3070 while still producing valid keys. Astra wrote and revised the kernels, benchmarked successive versions and added checks for the results.
+
+That optimisation session was separate from the longer address search. It was a quick cycle of trying changes, comparing throughput and pushing the faster versions further.
+
+The implementation adapted ref10 from the [pinned mkp224o source](https://github.com/cathugger/mkp224o/tree/5172c0fd71740ca0b11da8149a2575dcf331d7ab). Python and CuPy handled setup, compilation and saving matches, while CUDA did the repeated calculations on the GPU. Here, **candidates per second** means public-key prefix checks, rather than complete onion addresses generated and saved.
+
+## Getting past a billion
+
+The first sustained CUDA version reached **896.748 million candidates/sec**. Astra then tuned batch sizes, adjusted how work was divided across the GPU and removed calculations that short prefixes did not need. That brought the median past a billion.
+
+A further improvement drew on [ActiveTK’s GPUonion](https://github.com/ActiveTK/GPUonion), particularly its [optimization notes](https://github.com/ActiveTK/GPUonion/blob/a87d38a7c74c20ed76c75196ab6531b244a73c20/Optimize.md). Astra adapted the approach to the ref10-based implementation; no GPUonion source files were copied or vendored.
+
+The changes included Montgomery batch inversion, a cheaper way to move between candidates and less temporary data stored for each one. Together, these reduced repeated work and allowed larger batches in the same memory allocation.
+
+## The benchmark results
+
+| Stage | Median candidates/sec | Relative to CPU |
+|---|---:|---:|
+| Tuned CPU, 16 threads | 42.029 million | 1× |
+| Initial sustained CUDA | 896.748 million | 21.34× |
+| Specialized Edwards CUDA | 1.010 billion | 24.02× |
+| Montgomery CUDA | **1.338 billion** | **31.83×** |
+
+The final three GPU trials measured **1.347, 1.338 and 1.330 billion/sec**, each over about 30 seconds. These timings include launching the work and collecting results, but exclude initial setup, compilation, warm-up and writing key files.
+
+A recorded search window of about 27 minutes averaged **1.311 billion candidates/sec**, including initialization and pauses to save matches and restart with fresh randomness. The full campaign checked **2,615,299,538,944 candidates**.
+
+## Checking the results
+
+The CPU independently verified every reported match with libsodium before saving the key and full hostname. Astra also added tests for search settings, batch boundaries and Tor’s file formats. The final suite covered 104,007 candidate checks, useful validation rather than a cryptographic audit.
+
+The runner restarted with fresh randomness after each match to avoid saving multiple keys from related search sequences. It also restricted access to the key files and only moved completed exports into place.
+
+## The address
+
+The search retained four `ashfncom` addresses. I chose this one:
+
+<ExternalLink href="http://ashfncomabccvkuuvzbsjobu5wvtlw2wpz4mj3co5g5boyturbf36cyd.onion/" className="block break-all">ashfncomabccvkuuvzbsjobu5wvtlw2wpz4mj3co5g5boyturbf36cyd.onion</ExternalLink>
+
+I had only asked for `ashfncom`; the extra `abc` appeared by chance.
+
+What stuck with me was how effective AI can be at autonomously optimising something with a clear target and checkable results. Candidates per second gave Astra a score to improve, and independent cryptographic checks could confirm that the saved keys produced the claimed addresses. With benchmarks and correctness checks in the loop, it could try changes, measure them and keep iterating with relatively little direction from me.
+
+I could not have done this myself in half an hour. Starting with no CUDA experience, getting to a working search at over a billion candidates per second in that time would have been completely out of reach. Being able to set the goal, let Astra work through the implementation and then check what it produced made this a particularly useful way to use AI.
+
+</div>

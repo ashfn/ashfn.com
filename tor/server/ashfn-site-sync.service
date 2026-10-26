@@ -1,0 +1,16 @@
+[Unit]
+Description=Fetch published ashfn.com static files
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=ashfn-site
+Group=ashfn-site
+ExecStart=/usr/bin/python3 /opt/ashfn-onion/sync-site.py
+TimeoutStartSec=180
+UMask=0022
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/ashfn-site

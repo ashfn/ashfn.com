@@ -8,3 +8,6 @@ verification/
 .DS_Store
 
 .env
+
+# Local server inventory and deployment notes
+tor/server/DEPLOYMENT.md

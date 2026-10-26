@@ -1,0 +1,29 @@
+name: ashfn-onion
+services:
+  site:
+    build: .
+    image: ashfn-onion:local
+    restart: unless-stopped
+    init: true
+    cpus: 1.0
+    mem_limit: 512m
+    pids_limit: 128
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - /srv/ashfn-site:/srv/site:ro
+      - /var/lib/ashfn-onion:/var/lib/tor
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,mode=1777
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, --output, /dev/null, --max-time, '5', 'http://127.0.0.1:8080/']
+      interval: 30s
+      timeout: 8s
+      start_period: 30s
+      retries: 3
